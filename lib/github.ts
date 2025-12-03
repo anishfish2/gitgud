@@ -14,6 +14,7 @@ export interface GitHubUser {
     blog: string | null
     twitter_username: string | null
     created_at: string
+    type: string
 }
 
 export async function getGitHubUser(login: string): Promise<GitHubUser | null> {
@@ -58,6 +59,7 @@ export async function getGitHubUser(login: string): Promise<GitHubUser | null> {
             blog: data.blog,
             twitter_username: data.twitter_username,
             created_at: data.created_at,
+            type: data.type,
         }
     } catch (error) {
         console.error('Error fetching GitHub user:', error)
@@ -95,5 +97,66 @@ export async function getTopLanguages(login: string): Promise<Record<string, num
     } catch (error) {
         console.error('Error fetching languages:', error)
         return {}
+    }
+}
+
+export async function getProfileReadme(login: string): Promise<string | null> {
+    const token = process.env.GITHUB_TOKEN
+    const headers: HeadersInit = {
+        'Accept': 'application/vnd.github.v3.raw', // Request raw content
+        'User-Agent': 'GitGud-App',
+    }
+    if (token) headers['Authorization'] = `token ${token}`
+
+    try {
+        // Try to fetch from the special repo: username/username
+        const res = await fetch(`${GITHUB_API_BASE}/repos/${login}/${login}/readme`, {
+            headers,
+            next: { revalidate: 86400 }, // Cache for 24 hours
+        })
+
+        if (!res.ok) return null
+        return await res.text()
+    } catch (error) {
+        console.error('Error fetching README:', error)
+        return null
+    }
+}
+
+export interface RepoInfo {
+    name: string
+    description: string | null
+    stargazers_count: number
+    language: string | null
+    html_url: string
+}
+
+export async function getTopRepos(login: string): Promise<RepoInfo[]> {
+    const token = process.env.GITHUB_TOKEN
+    const headers: HeadersInit = {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'GitGud-App',
+    }
+    if (token) headers['Authorization'] = `token ${token}`
+
+    try {
+        const res = await fetch(`${GITHUB_API_BASE}/users/${login}/repos?sort=stars&per_page=5`, {
+            headers,
+            next: { revalidate: 3600 },
+        })
+
+        if (!res.ok) return []
+
+        const repos = await res.json()
+        return repos.map((r: any) => ({
+            name: r.name,
+            description: r.description,
+            stargazers_count: r.stargazers_count,
+            language: r.language,
+            html_url: r.html_url,
+        }))
+    } catch (error) {
+        console.error('Error fetching top repos:', error)
+        return []
     }
 }

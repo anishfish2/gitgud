@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/utils/supabase/admin'
-import { getGitHubUser, getTopLanguages } from '@/lib/github'
+import { getGitHubUser, getTopLanguages, getProfileReadme, getTopRepos } from '@/lib/github'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -33,7 +33,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'GitHub user not found' }, { status: 404 })
         }
 
+        if (ghUser.type !== 'User') {
+            return NextResponse.json({ error: 'Only individual users are allowed (no organizations)' }, { status: 400 })
+        }
+
         const topLanguages = await getTopLanguages(login)
+        const readme = await getProfileReadme(login)
+        const topRepos = await getTopRepos(login)
 
         // 3. Insert into profiles
         const { data: profile, error: profileError } = await supabase
@@ -52,6 +58,8 @@ export async function POST(request: Request) {
                 twitter_username: ghUser.twitter_username,
                 gh_created_at: ghUser.created_at,
                 top_languages: topLanguages,
+                readme_content: readme,
+                top_repos: topRepos,
                 activity_band: ghUser.public_repos > 50 ? 2 : ghUser.public_repos > 10 ? 1 : 0,
                 last_synced_at: new Date().toISOString(),
             })
