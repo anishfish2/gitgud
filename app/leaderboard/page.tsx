@@ -276,76 +276,78 @@ export default function Leaderboard() {
 
                 {/* Table */}
                 <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-zinc-800 text-zinc-400 text-sm uppercase tracking-wider">
-                                <th className="p-4 font-medium">Rank</th>
-                                <th className="p-4 font-medium">Profile</th>
-                                <th className="p-4 font-medium text-right">Rating</th>
-                                <th className="p-4 font-medium text-right hidden md:table-cell">Matches</th>
-                                <th className="p-4 font-medium text-right hidden md:table-cell">Followers</th>
-                                <th className="p-4 font-medium text-right hidden md:table-cell">Repos</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-800/50">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="p-8 text-center text-zinc-500">
-                                        Loading leaderboard...
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[600px] md:min-w-full">
+                            <thead>
+                                <tr className="border-b border-zinc-800 text-zinc-400 text-sm uppercase tracking-wider">
+                                    <th className="p-4 font-medium">Rank</th>
+                                    <th className="p-4 font-medium">Profile</th>
+                                    <th className="p-4 font-medium text-right">Rating</th>
+                                    <th className="p-4 font-medium text-right hidden md:table-cell">Matches</th>
+                                    <th className="p-4 font-medium text-right hidden md:table-cell">Followers</th>
+                                    <th className="p-4 font-medium text-right hidden md:table-cell">Repos</th>
                                 </tr>
-                            ) : (
-                                filteredEntries.map((entry, index) => (
-                                    <tr key={entry.profile_id} className="hover:bg-zinc-900/50 transition-colors">
-                                        <td className="p-4 text-zinc-500 font-mono w-16">#{index + 1}</td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="relative w-10 h-10 rounded-full overflow-hidden border border-zinc-700">
-                                                    <Image
-                                                        src={entry.profiles.avatar_url}
-                                                        alt={entry.profiles.login}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <div className="font-bold text-white">{entry.profiles.login}</div>
-                                                    <div className="text-xs text-zinc-500 truncate max-w-[200px]">
-                                                        {entry.profiles.bio}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <div className="font-mono text-green-400 font-bold">
-                                                {Math.round(entry.mu)}
-                                            </div>
-                                            <div className="text-xs text-zinc-600">
-                                                ±{Math.round(entry.phi * 2)}
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-right text-zinc-400 hidden md:table-cell">
-                                            {entry.games_played}
-                                        </td>
-                                        <td className="p-4 text-right text-zinc-400 hidden md:table-cell">
-                                            {entry.profiles.followers}
-                                        </td>
-                                        <td className="p-4 text-right text-zinc-400 hidden md:table-cell">
-                                            {entry.profiles.public_repos}
+                            </thead>
+                            <tbody className="divide-y divide-zinc-800/50">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={6} className="p-8 text-center text-zinc-500">
+                                            Loading leaderboard...
                                         </td>
                                     </tr>
-                                ))
-                            )}
+                                ) : (
+                                    filteredEntries.map((entry, index) => (
+                                        <tr key={entry.profile_id} className="hover:bg-zinc-900/50 transition-colors">
+                                            <td className="p-4 text-zinc-500 font-mono w-16">#{index + 1}</td>
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="relative w-10 h-10 rounded-full overflow-hidden border border-zinc-700 shrink-0">
+                                                        <Image
+                                                            src={entry.profiles.avatar_url}
+                                                            alt={entry.profiles.login}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="font-bold text-white truncate">{entry.profiles.login}</div>
+                                                        <div className="text-xs text-zinc-500 truncate max-w-[120px] md:max-w-[200px]">
+                                                            {entry.profiles.bio}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-right">
+                                                <div className="font-mono text-green-400 font-bold">
+                                                    {Math.round(entry.mu)}
+                                                </div>
+                                                <div className="text-xs text-zinc-600">
+                                                    ±{Math.round(entry.phi * 2)}
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-right text-zinc-400 hidden md:table-cell">
+                                                {entry.games_played}
+                                            </td>
+                                            <td className="p-4 text-right text-zinc-400 hidden md:table-cell">
+                                                {entry.profiles.followers}
+                                            </td>
+                                            <td className="p-4 text-right text-zinc-400 hidden md:table-cell">
+                                                {entry.profiles.public_repos}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
 
-                            {!loading && filteredEntries.length === 0 && (
-                                <tr>
-                                    <td colSpan={6} className="p-8 text-center text-zinc-500">
-                                        No profiles match your filters.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                {!loading && filteredEntries.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="p-8 text-center text-zinc-500">
+                                            No profiles match your filters.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>

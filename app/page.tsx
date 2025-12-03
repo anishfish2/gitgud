@@ -84,29 +84,29 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-zinc-950 to-zinc-950 p-4 overflow-hidden relative">
+    <main className="flex min-h-screen flex-col items-center justify-start md:justify-center bg-zinc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-zinc-950 to-zinc-950 p-4 overflow-x-hidden relative">
       <Starfield />
 
       {/* Header / Nav (Simple) */}
-      <nav className="absolute top-0 w-full p-6 flex justify-between items-center max-w-6xl mx-auto">
+      <nav className="absolute top-0 w-full p-6 flex justify-between items-center max-w-6xl mx-auto z-50">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-white to-zinc-500 rounded-lg flex items-center justify-center font-bold text-zinc-950 shadow-lg shadow-white/10">G</div>
           <span className="font-bold text-xl text-white tracking-tight">GitGud</span>
         </div>
         <div className="flex gap-4">
           <Link href="/search" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium">
-            <SearchIcon size={16} /> Search
+            <SearchIcon size={16} /> <span className="hidden md:inline">Search</span>
           </Link>
           <Link href="/leaderboard" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium">
-            <Trophy size={16} /> Leaderboard
+            <Trophy size={16} /> <span className="hidden md:inline">Leaderboard</span>
           </Link>
           <Link href="/submit" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium">
-            <Plus size={16} /> Add Profile
+            <Plus size={16} /> <span className="hidden md:inline">Add Profile</span>
           </Link>
         </div>
       </nav>
 
-      <div className="text-center mb-8 mt-6 md:mb-12 md:mt-10 relative z-10">
+      <div className="text-center mb-8 mt-24 md:mb-12 md:mt-10 relative z-10">
         <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-500 mb-4 tracking-tight">
           Who diffs?
         </h1>

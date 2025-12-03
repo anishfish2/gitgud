@@ -15,10 +15,6 @@ export async function GET(request: Request) {
         let sessionId = cookieStore.get('session_id')?.value
         if (!sessionId) {
             sessionId = uuidv4()
-            // We can't set cookies in a GET handler easily in Next.js App Router without returning a response.
-            // We'll return it in the response headers or body and let client set it, 
-            // OR we just use it for this request and expect client to handle session generation if missing.
-            // Better: Set it on the response.
         }
 
         const supabase = createAdminClient()
@@ -33,51 +29,98 @@ export async function GET(request: Request) {
             rightProfile = null
 
             // 1. Decide strategy: Newcomer vs Standard
-            const useNewcomer = Math.random() < 0.5
+            const useNewcomer = Math.random() < 0.6 // Increased newcomer chance to 60%
 
             if (useNewcomer) {
-                // Find a newcomer
-                const { data: newcomers } = await supabase
+                // 1. Priority: Find profiles with ZERO matches
+                const { data: zeroMatchIds } = await supabase
                     .from('ratings')
-                    .select('profile_id, mu, phi, games_played, profiles(*)')
-                    .or(`games_played.lt.${NEWCOMER_GAMES_THRESHOLD},phi.gt.${NEWCOMER_PHI_THRESHOLD}`)
-                    .limit(20)
+                    .select('profile_id')
+                    .eq('games_played', 0)
 
-                if (newcomers && newcomers.length > 0) {
-                    const newcomer = newcomers[Math.floor(Math.random() * newcomers.length)]
-                    leftProfile = newcomer.profiles
+                let newcomerId = null
 
-                    const { data: anchors } = await supabase
+                if (zeroMatchIds && zeroMatchIds.length > 0) {
+                    // Pick random zero-match profile
+                    newcomerId = zeroMatchIds[Math.floor(Math.random() * zeroMatchIds.length)].profile_id
+                } else {
+                    // 2. Fallback: Find profiles with < 5 matches or high uncertainty
+                    const { data: newcomerIds } = await supabase
                         .from('ratings')
-                        .select('profile_id, mu, phi, profiles(*)')
-                        .lt('phi', ANCHOR_PHI_THRESHOLD)
-                        .gte('games_played', NEWCOMER_GAMES_THRESHOLD)
-                        .order('mu', { ascending: true })
-                        .limit(50)
+                        .select('profile_id')
+                        .or(`games_played.lt.${NEWCOMER_GAMES_THRESHOLD},phi.gt.${NEWCOMER_PHI_THRESHOLD}`)
 
-                    if (anchors && anchors.length > 0) {
-                        const anchor = anchors[Math.floor(Math.random() * anchors.length)]
-                        rightProfile = anchor.profiles
+                    if (newcomerIds && newcomerIds.length > 0) {
+                        newcomerId = newcomerIds[Math.floor(Math.random() * newcomerIds.length)].profile_id
+                    }
+                }
+
+                if (newcomerId) {
+                    // Fetch full profile for newcomer
+                    const { data: newcomerProfile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', newcomerId)
+                        .single()
+
+                    if (newcomerProfile) {
+                        leftProfile = newcomerProfile
+
+                        // Fetch ALL anchor IDs
+                        const { data: anchorIds } = await supabase
+                            .from('ratings')
+                            .select('profile_id')
+                            .lt('phi', ANCHOR_PHI_THRESHOLD)
+                            .gte('games_played', NEWCOMER_GAMES_THRESHOLD)
+
+                        if (anchorIds && anchorIds.length > 0) {
+                            const randomAnchor = anchorIds[Math.floor(Math.random() * anchorIds.length)]
+                            const { data: anchorProfile } = await supabase
+                                .from('profiles')
+                                .select('*')
+                                .eq('id', randomAnchor.profile_id)
+                                .single()
+
+                            rightProfile = anchorProfile
+                        }
                     }
                 }
             }
 
-            // Fallback to Standard Matchmaking
+            // Fallback to Standard Matchmaking (or if Newcomer failed)
             if (!leftProfile || !rightProfile) {
-                const { data: candidates } = await supabase
+                // Fetch ALL profile IDs
+                const { data: allIds } = await supabase
                     .from('profiles')
-                    .select('*, ratings!inner(mu, phi)')
-                    .limit(50)
+                    .select('id')
 
-                if (!candidates || candidates.length < 2) {
+                if (!allIds || allIds.length < 2) {
                     return NextResponse.json({ error: 'Not enough profiles' }, { status: 404 })
                 }
 
-                const shuffled = candidates.sort(() => 0.5 - Math.random())
-                leftProfile = shuffled[0]
-                rightProfile = shuffled[1]
+                // Pick 2 distinct random IDs
+                const idx1 = Math.floor(Math.random() * allIds.length)
+                let idx2 = Math.floor(Math.random() * allIds.length)
+                while (idx1 === idx2) {
+                    idx2 = Math.floor(Math.random() * allIds.length)
+                }
+
+                const id1 = allIds[idx1].id
+                const id2 = allIds[idx2].id
+
+                // Fetch full profiles
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .in('id', [id1, id2])
+
+                if (profiles && profiles.length === 2) {
+                    leftProfile = profiles[0]
+                    rightProfile = profiles[1]
+                }
             }
 
+            if (!leftProfile || !rightProfile) continue
             if (leftProfile.id === rightProfile.id) continue
 
             // Check for duplicate match
@@ -93,11 +136,22 @@ export async function GET(request: Request) {
             if (!existing) {
                 break // Found a fresh pair
             }
-            // If existing, loop again
         }
 
         if (!leftProfile || !rightProfile) {
-            return NextResponse.json({ error: 'Failed to find pair' }, { status: 500 })
+            // Last resort: just grab any 2 (should rarely happen)
+            const { data: panicProfiles } = await supabase
+                .from('profiles')
+                .select('*')
+                .limit(2)
+
+            if (panicProfiles && panicProfiles.length === 2) {
+                leftProfile = panicProfiles[0]
+                rightProfile = panicProfiles[1]
+                pairHash = [leftProfile.id, rightProfile.id].sort().join(':')
+            } else {
+                return NextResponse.json({ error: 'Failed to find pair' }, { status: 500 })
+            }
         }
 
         // Create Match
