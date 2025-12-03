@@ -90,7 +90,7 @@ export default function Home() {
       {/* Header / Nav (Simple) */}
       <nav className="absolute top-0 w-full p-6 flex justify-between items-center max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-bold text-white">G</div>
+          <div className="w-8 h-8 bg-gradient-to-br from-white to-zinc-500 rounded-lg flex items-center justify-center font-bold text-zinc-950 shadow-lg shadow-white/10">G</div>
           <span className="font-bold text-xl text-white tracking-tight">GitGud</span>
         </div>
         <div className="flex gap-4">
@@ -108,7 +108,7 @@ export default function Home() {
 
       <div className="text-center mb-8 mt-6 md:mb-12 md:mt-10 relative z-10">
         <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-500 mb-4 tracking-tight">
-          Who's Better?
+          Who diffs?
         </h1>
         <p className="text-zinc-500 text-lg">Rank GitHub profiles based on vibes, code, and stats.</p>
       </div>
@@ -150,7 +150,15 @@ export default function Home() {
         </div>
       )}
 
-      <div className="fixed bottom-6 text-zinc-700 text-xs">
+      <div className="mt-12 mb-20 text-center max-w-2xl px-4 relative z-10">
+        <p className="text-zinc-800 text-[10px] uppercase tracking-widest">Disclaimer</p>
+        <p className="text-zinc-700 text-xs mt-2">
+          This is just for fun! Rankings are completely subjective based on user votes.
+          If you want your profile removed, please email <a href="mailto:anishkarthik21@gmail.com" className="hover:text-zinc-500 underline">anishkarthik21@gmail.com</a>.
+        </p>
+      </div>
+
+      <div className="fixed bottom-4 right-4 text-zinc-800 text-[10px] font-mono z-50 pointer-events-none select-none">
         Built with Next.js + Supabase + Glicko
       </div>
     </main>

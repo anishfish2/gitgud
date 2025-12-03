@@ -53,8 +53,8 @@ export default function SubmitPage() {
                     className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-2xl"
                 >
                     <div className="flex justify-center mb-6">
-                        <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center">
-                            <Github size={32} className="text-white" />
+                        <div className="w-16 h-16 bg-gradient-to-br from-white to-zinc-500 rounded-2xl flex items-center justify-center shadow-xl shadow-white/10">
+                            <Github size={32} className="text-zinc-950" />
                         </div>
                     </div>
 
