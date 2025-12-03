@@ -100,8 +100,8 @@ export default function Leaderboard() {
         } else if (sortBy === 'repos') {
             result.sort((a, b) => b.profiles.public_repos - a.profiles.public_repos)
         } else {
-            // Default Rank (Score)
-            result.sort((a, b) => b.score - a.score)
+            // Default Rank (Rating/Mu)
+            result.sort((a, b) => b.mu - a.mu)
         }
 
         setFilteredEntries(result)
