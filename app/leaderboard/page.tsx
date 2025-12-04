@@ -193,7 +193,7 @@ export default function Leaderboard() {
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {gems.map((entry: any) => (
-                                <div key={entry.profile_id} className="flex items-center gap-3 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50">
+                                <div key={entry.profile_id} className="flex items-center gap-3 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50 h-full">
                                     <div className="relative w-10 h-10 rounded-full overflow-hidden border border-zinc-700">
                                         <Image src={entry.profiles.avatar_url} alt={entry.profiles.login} fill className="object-cover" />
                                     </div>

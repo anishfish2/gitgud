@@ -114,7 +114,7 @@ export default function Home() {
       </div>
 
       {match && (
-        <div className="flex flex-col md:flex-row gap-8 items-center justify-center w-full max-w-4xl relative z-10">
+        <div className="flex flex-col md:flex-row gap-8 items-stretch justify-center w-full max-w-4xl relative z-10">
           <div className="flex-1 w-full max-w-sm">
             <VoteCard
               profile={match.left}

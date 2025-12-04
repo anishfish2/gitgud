@@ -45,7 +45,7 @@ export function VoteCard({ profile, onVote, disabled, result }: VoteCardProps) {
                 whileHover={{ scale: disabled ? 1 : 1.02 }}
                 whileTap={{ scale: disabled ? 1 : 0.98 }}
                 className={`
-        relative flex flex-col items-center p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 w-full bg-zinc-900/80 backdrop-blur-sm
+        relative flex flex-col items-center p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 w-full h-full bg-zinc-900/80 backdrop-blur-sm
         ${result === 'win' ? 'border-green-500 bg-green-500/10 shadow-[0_0_30px_rgba(34,197,94,0.3)]' : ''}
         ${result === 'lose' ? 'border-red-500/50 opacity-50 grayscale' : ''}
         ${!result ? 'border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900' : ''}
