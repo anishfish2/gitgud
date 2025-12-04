@@ -9,6 +9,7 @@ import { motion } from 'framer-motion'
 
 export default function SearchPage() {
     const [query, setQuery] = useState('')
+    const [submittedQuery, setSubmittedQuery] = useState('')
     const [results, setResults] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
     const [searched, setSearched] = useState(false)
@@ -19,6 +20,7 @@ export default function SearchPage() {
 
         setLoading(true)
         setSearched(true)
+        setSubmittedQuery(query)
         const supabase = createClient()
 
         // Simple search: match login or bio
@@ -64,45 +66,61 @@ export default function SearchPage() {
                 <div className="space-y-4">
                     {searched && results.length === 0 && !loading && (
                         <div className="text-center text-zinc-500 py-12">
-                            No profiles found matching "{query}".
+                            No profiles found matching "{submittedQuery}".
                         </div>
                     )}
 
-                    {results.map((profile) => (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            key={profile.id}
-                            className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl flex items-center gap-4 hover:border-zinc-700 transition-colors"
-                        >
-                            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-zinc-700 shrink-0">
-                                <Image
-                                    src={profile.avatar_url}
-                                    alt={profile.login}
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="font-bold text-lg truncate">{profile.login}</h3>
-                                    <span className="font-mono text-green-400 text-sm">
-                                        {profile.ratings?.[0]?.mu ? Math.round(profile.ratings[0].mu) : 'Unranked'}
-                                    </span>
+                    {results.map((profile) => {
+                        const ratingData = Array.isArray(profile.ratings) ? profile.ratings[0] : profile.ratings
+                        const mu = ratingData?.mu ? Math.round(ratingData.mu) : 'Unranked'
+
+                        return (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                key={profile.id}
+                                className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl flex items-center gap-4 hover:border-zinc-700 transition-colors group"
+                            >
+                                <div className="relative w-12 h-12 rounded-full overflow-hidden border border-zinc-700 shrink-0">
+                                    <Image
+                                        src={profile.avatar_url}
+                                        alt={profile.login}
+                                        fill
+                                        className="object-cover"
+                                    />
                                 </div>
-                                <p className="text-zinc-500 text-sm truncate">{profile.bio || 'No bio'}</p>
-                                {profile.top_languages && (
-                                    <div className="flex gap-2 mt-2">
-                                        {Object.keys(profile.top_languages).slice(0, 3).map(lang => (
-                                            <span key={lang} className="text-[10px] bg-zinc-800 px-2 py-1 rounded-full text-zinc-400">
-                                                {lang}
-                                            </span>
-                                        ))}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-lg truncate">{profile.login}</h3>
+                                            <a
+                                                href={profile.html_url || `https://github.com/${profile.login}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-zinc-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                                                title="View on GitHub"
+                                            >
+                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
+                                            </a>
+                                        </div>
+                                        <span className={`font-mono text-sm ${mu === 'Unranked' ? 'text-zinc-500' : 'text-green-400'}`}>
+                                            {mu}
+                                        </span>
                                     </div>
-                                )}
-                            </div>
-                        </motion.div>
-                    ))}
+                                    <p className="text-zinc-500 text-sm truncate">{profile.bio || 'No bio'}</p>
+                                    {profile.top_languages && (
+                                        <div className="flex gap-2 mt-2">
+                                            {Object.keys(profile.top_languages).slice(0, 3).map(lang => (
+                                                <span key={lang} className="text-[10px] bg-zinc-800 px-2 py-1 rounded-full text-zinc-400">
+                                                    {lang}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )
+                    })}
                 </div>
             </div>
         </main>
